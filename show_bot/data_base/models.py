@@ -3,8 +3,8 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .database import Base
 
 
-# Модель для таблицы пользователей
 class User(Base):
+    """Модель для таблицы пользователей."""
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
@@ -19,8 +19,8 @@ class User(Base):
     )
 
 
-# Модель для таблицы заметок
 class Note(Base):
+    """Модель для таблицы заметок."""
     __tablename__ = 'notes'
 
     id: Mapped[int] = mapped_column(
@@ -33,6 +33,7 @@ class Note(Base):
         nullable=False
     )
     content_type: Mapped[str] = mapped_column(String, nullable=True)
+    category: Mapped[str] = mapped_column(String, nullable=True)
     content_text: Mapped[str] = mapped_column(Text, nullable=True)
     file_id: Mapped[str] = mapped_column(String, nullable=True)
     user: Mapped["User"] = relationship("User", back_populates="notes")
