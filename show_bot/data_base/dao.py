@@ -1,7 +1,8 @@
 from create_bot import logger
 from .base import connection
-from .models import User, Note
+from .models import Category, User, Note
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from typing import List, Dict, Any, Optional
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -32,11 +33,56 @@ async def set_user(
 
 
 @connection
+async def add_category(
+    session,
+    text_name: str,
+) -> Optional[Category]:
+    """Создаем категорию, если ее нет."""
+    try:
+        category = await session.scalar(select(Category).filter_by(name=text_name))
+
+        if not category:
+            new_category = Category(name=text_name)
+            session.add(new_category)
+            await session.commit()
+            logger.info(f"Добавлена новая категория: {text_name}!")
+            return new_category
+        else:
+            logger.info(f"Категория {text_name} уже существует!")
+            return None
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при добавлении категории: {e}")
+        await session.rollback()
+
+
+@connection
+async def update_category(
+    session,
+    category_id: int,
+    text_name: str
+) -> Optional[Note]:
+    """Обновляем название категории."""
+    try:
+        category = await session.scalar(select(Category).filter_by(id=category_id))
+        if not category:
+            logger.error(f"Категория '{text_name}' не найдена.")
+            return None
+
+        category.name = text_name
+        await session.commit()
+        logger.info(f"Категория '{text_name}' успешно обновлена!")
+        return category
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при обновлении категории: {e}")
+        await session.rollback()
+
+
+@connection
 async def add_note(
     session,
     user_id: int,
     content_type: str,
-    caregory: Optional[str] = None,
+    caregory_id: int,
     content_text: Optional[str] = None,
     file_id: Optional[str] = None
 ) -> Optional[Note]:
@@ -50,7 +96,7 @@ async def add_note(
         new_note = Note(
             user_id=user_id,
             content_type=content_type,
-            caregory=caregory,
+            caregory_id=caregory_id,
             content_text=content_text,
             file_id=file_id
         )
@@ -88,22 +134,86 @@ async def update_text_note(
 
 
 @connection
-async def update_category_note(
-    session,
-    note_id: int,
-    caregory: str
-) -> Optional[Note]:
-    """Обновляем категорию заметки."""
+async def get_note_by_id(session, note_id: int) -> Optional[Dict[str, Any]]:
     try:
-        note = await session.scalar(select(Note).filter_by(id=note_id))
+        stmt = select(Note).options(
+            selectinload(Note.category)
+        ).where(Note.id == note_id)
+        result = await session.execute(stmt)
+        note = result.scalar_one_or_none()
+        if not note:
+            logger.info(f"Заметка с ID {note_id} не найдена.")
+            return None
+
+        return {
+            'id': note.id,
+            'category_name': note.category.name if note.category else "Без категории",
+            'content_type': note.content_type,
+            'content_text': note.content_text,
+            'file_id': note.file_id
+        }
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при получении заметки: {e}")
+        return None
+
+
+@connection
+async def delete_note_by_id(session, note_id: int) -> Optional[Note]:
+    try:
+        note = await session.get(Note, note_id)
         if not note:
             logger.error(f"Заметка с ID {note_id} не найдена.")
             return None
 
-        note.caregory = caregory
+        await session.delete(note)
         await session.commit()
-        logger.info(f"Заметка с ID {note_id} успешно обновлена!")
+        logger.info(f"Заметка с ID {note_id} успешно удалена.")
         return note
     except SQLAlchemyError as e:
-        logger.error(f"Ошибка при обновлении заметки: {e}")
+        logger.error(f"Ошибка при удалении заметки: {e}")
         await session.rollback()
+        return None
+
+
+@connection
+async def get_notes_by_user(
+    session,
+    user_id: int,
+    text_search: Optional[str] = None,
+    category_id: Optional[int] = None
+) -> List[Dict[str, Any]]:
+    try:
+        stmt = select(Note).filter(Note.user_id == user_id)
+
+        if category_id is not None:
+            stmt = stmt.filter(Note.category_id == category_id)
+
+        result = await session.execute(stmt)
+        notes = result.scalars().all()
+
+        if not notes:
+            logger.info("Заметки для пользователя"
+                        f" с ID {user_id} не найдены.")
+            return []
+
+        note_list = [
+            {
+                'id': note.id,
+                'content_type': note.content_type,
+                'content_text': note.content_text,
+                'file_id': note.file_id,
+                'date_created': note.created_at
+            } for note in notes
+        ]
+
+        if text_search:
+            note_list = [
+                note for note in note_list
+                if text_search.lower() in (note['content_text'] or '').lower()
+            ]
+
+        return note_list
+
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при получении заметок: {e}")
+        return []
