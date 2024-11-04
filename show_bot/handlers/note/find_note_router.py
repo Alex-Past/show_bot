@@ -1,10 +1,10 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 from create_bot import bot
 from data_base.dao import get_notes_by_user
-from keyboards.note_kb import main_note_kb, find_note_kb, generate_date_keyboard, generate_type_content_keyboard
+from keyboards.note_kb import main_note_kb, find_note_kb
 from utils_bot.utils import send_many_notes
 
 

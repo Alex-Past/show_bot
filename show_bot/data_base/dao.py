@@ -96,7 +96,7 @@ async def add_note(
         new_note = Note(
             user_id=user_id,
             content_type=content_type,
-            caregory_id=caregory_id,
+            category_id=caregory_id,
             content_text=content_text,
             file_id=file_id
         )
@@ -158,6 +158,25 @@ async def get_note_by_id(session, note_id: int) -> Optional[Dict[str, Any]]:
 
 
 @connection
+async def get_category_by_id(session, cat_id: int) -> Optional[Dict[str, Any]]:
+    try:
+        stmt = select(Category).where(Category.id == cat_id)
+        category = await session.scalar(stmt)        
+        if not category:
+            logger.info(f"Категория с ID {cat_id} не найдена.")
+            return None
+
+        return {
+            'id': category.id,
+            'category_name': category.name
+        }
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при получении категории: {e}")
+        return None
+
+
+
+@connection
 async def delete_note_by_id(session, note_id: int) -> Optional[Note]:
     try:
         note = await session.get(Note, note_id)
@@ -173,6 +192,32 @@ async def delete_note_by_id(session, note_id: int) -> Optional[Note]:
         logger.error(f"Ошибка при удалении заметки: {e}")
         await session.rollback()
         return None
+
+
+@connection
+async def get_all_categories(session) -> List[Dict[str, Any]]:
+    try:        
+        stmt = select(Category)
+        result = await session.execute(stmt)
+        categories = result.scalars().all()
+        if not categories:
+            logger.info("Категории не найдены.")
+            return []
+        
+        cat_list = [
+            {
+                'id': cat.id,
+                'category_name': cat.name                
+            } for cat in categories
+        ]
+        return cat_list
+
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при получении категорий: {e}")
+        return []
+
+        
+    
 
 
 @connection
