@@ -41,8 +41,11 @@ async def send_message_user(bot, user_id, content_type, content_text=None, file_
 async def send_many_notes(all_notes, bot, user_id):
     for note in all_notes:
         try:
+            text = (f"Заметка:\n\n"                   
+                    f"Текст: <b>{note['content_text'] if note['content_text'] else ''}</b>\n\n"                
+                    f" ")
             await send_message_user(bot=bot, content_type=note['content_type'],
-                                    content_text=note['content_text'],
+                                    content_text=text,
                                     user_id=user_id,
                                     file_id=note['file_id'],
                                     kb=rule_note_kb(note['id']))

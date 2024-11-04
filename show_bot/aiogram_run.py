@@ -9,13 +9,11 @@ from aiogram.types import BotCommand, BotCommandScopeDefault
 from handlers.start_router import start_router
 
 
-# Функция, которая настроит командное меню (дефолтное для всех пользователей)
 async def set_commands():
     commands = [BotCommand(command='start', description='Старт')]
     await bot.set_my_commands(commands, BotCommandScopeDefault())
 
 
-# Функция, которая выполнится когда бот запустится
 async def start_bot():
     await set_commands()
     await create_tables()
@@ -26,27 +24,23 @@ async def start_bot():
             pass
 
 
-# Функция, которая выполнится когда бот завершит свою работу
 async def stop_bot():
-    try:
-        for admin_id in admins:
+    for admin_id in admins:
+        try:
             await bot.send_message(admin_id, 'Бот остановлен.')
-    except:
-        pass
+        except:
+            pass
 
 
-async def main():
-    # регистрация роутеров
+async def main():    
     dp.include_router(start_router)
     dp.include_router(add_note_router)
     dp.include_router(find_note_router)
     dp.include_router(upd_note_router)
 
-    # регистрация функций
     dp.startup.register(start_bot)
     dp.shutdown.register(stop_bot)
 
-    # запуск бота в режиме long polling при запуске бот очищает все обновления, которые были за его моменты бездействия
     try:
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(

@@ -12,9 +12,9 @@ from utils_bot.utils import get_content_info, send_message_user
 add_note_router = Router()
 
 class AddNoteStates(StatesGroup):
-    content = State()  # Ожидаем любое сообщение от пользователя
-    check_state = State()  # Финальна проверка
-    category = State()  # Ожидаем категорию
+    content = State() 
+    check_state = State() 
+    category = State()
     check_state_cat = State()
 
     
@@ -29,12 +29,11 @@ async def start_note(message: Message, state: FSMContext):
 async def category_views_noti(message: Message, state: FSMContext):
     await state.clear()
     all_category = await get_all_categories()
+    await message.answer('Добавьте новую категорию с помощью меню', reply_markup=main_category_kb())        
     
     if all_category:
         await message.answer('Выберете категорию',
                              reply_markup=generate_category_keyboard(all_category))
-        await message.answer('Или добавьте новую', reply_markup=main_category_kb())
-        # await state.set_state(AddNoteStates.content)
     else:
         await message.answer('У вас пока нет ни одной заметки!', reply_markup=main_category_kb())        
 
@@ -57,6 +56,10 @@ async def handle_category_message(message: Message, state: FSMContext):
         await message.answer('Укажите название категории')        
         await state.set_state(AddNoteStates.category)            
 
+@add_note_router.message(AddNoteStates.check_state_cat, F.text == "❌ Отменить")
+async def cancel_add_category(message: Message, state: FSMContext):
+    await message.answer('Добавление категории отменено!', reply_markup=main_note_kb())
+    await state.clear()
 
 @add_note_router.message(AddNoteStates.check_state_cat, F.text == "✅ Добавить")
 async def confirm_add_category(message: Message, state: FSMContext):
@@ -78,17 +81,15 @@ async def start_add_note(call: CallbackQuery, state: FSMContext):
 async def handle_user_note_message(message: Message, state: FSMContext):   
     data = await state.get_data()
     cat_id = data.get('category_id')
-    category = await get_category_by_id(cat_id)
-    print(category)
+    category = await get_category_by_id(cat_id)    
     content_info = get_content_info(message)    
     if content_info.get('content_type'):
         await state.update_data(**content_info)
 
-        text = (f"Получена заметка:\n"
-                f"Тип: {content_info['content_type']}\n"
-                f"Категория: {category['category_name']}\n"
-                f"Подпись: {content_info['content_text'] if content_info['content_text'] else 'Отсутствует'}\n"
-                f"File ID: {content_info['file_id'] if content_info['file_id'] else 'Нет файла'}\n\n"
+        text = (f"Новая заметка:\n\n"                
+                f"Категория: <b>{category['category_name']}</b>\n"
+                "Текст:\n"
+                f"{content_info['content_text'] if content_info['content_text'] else 'Отсутствует'}\n\n"                
                 f"Все ли верно?")
         await send_message_user(bot=bot, content_type=content_info['content_type'], content_text=text,
                                 user_id=message.from_user.id, file_id=content_info['file_id'],
@@ -100,7 +101,7 @@ async def handle_user_note_message(message: Message, state: FSMContext):
         )
         await state.set_state(AddNoteStates.content)
 
-@add_note_router.message(AddNoteStates.check_state, F.text == '✅ Все верно')
+@add_note_router.message(AddNoteStates.check_state, F.text == "✅ Все верно")
 async def confirm_add_note(message: Message, state: FSMContext):
     note = await state.get_data()
     cat_id = int(note.get('category_id'))    
@@ -110,7 +111,7 @@ async def confirm_add_note(message: Message, state: FSMContext):
     await state.clear()
 
 
-@add_note_router.message(AddNoteStates.check_state, F.text == '❌ Отменить')
+@add_note_router.message(AddNoteStates.check_state, F.text == "❌ Отменить")
 async def cancel_add_note(message: Message, state: FSMContext):
     await message.answer('Добавление заметки отменено!', reply_markup=main_note_kb())
     await state.clear()    

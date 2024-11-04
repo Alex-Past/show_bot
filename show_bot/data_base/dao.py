@@ -262,3 +262,39 @@ async def get_notes_by_user(
     except SQLAlchemyError as e:
         logger.error(f"Ошибка при получении заметок: {e}")
         return []
+
+
+@connection
+async def find_notes_by_category_name(
+    session,
+    category_name: str
+) -> List[Dict[str, Any]]:
+    try:        
+        stmt = (
+            select(Note)
+            .join(Category)
+            .where(Category.name == category_name)
+            .options(selectinload(Note.category))
+        )
+        
+        result = await session.execute(stmt)
+        notes = result.scalars().all()
+
+        if not notes:
+            logger.info(f"Заметки для категории '{category_name}' не найдены.")
+            return []
+        
+        notes_list = [
+            {
+                'id': note.id,
+                'content_type': note.content_type,
+                'content_text': note.content_text,
+                'file_id': note.file_id,
+                'category_name': note.category.name  # добавляем имя категории для удобства
+            } for note in notes
+        ]
+        return notes_list
+
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при поиске заметок по категории '{category_name}': {e}")
+        return []
