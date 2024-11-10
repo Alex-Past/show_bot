@@ -58,9 +58,9 @@ def main_note_kb():
 
 def find_note_kb():
     kb_list = [
-        [KeyboardButton(text="📋 Все заметки"), KeyboardButton(text="📝 Все категории")],
+        [KeyboardButton(text="📋 Все заметки"), KeyboardButton(text="📝 По категории")],
         [KeyboardButton(text="🔍 Поиск по тексту"), KeyboardButton(text="🔍 Поиск категории")],
-        [KeyboardButton(text="🏠 Главное меню")]
+        [KeyboardButton(text="📋 Все категории"), KeyboardButton(text="🏠 Главное меню")]
     ]
     return ReplyKeyboardMarkup(
         keyboard=kb_list,

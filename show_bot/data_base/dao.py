@@ -63,7 +63,8 @@ async def update_category(
 ) -> Optional[Note]:
     """Обновляем название категории."""
     try:
-        category = await session.scalar(select(Category).filter_by(id=category_id))
+        # category = await session.scalar(select(Category).filter_by(id=category_id))
+        category = await session.get(Category, category_id)
         if not category:
             logger.error(f"Категория '{text_name}' не найдена.")
             return None
@@ -75,6 +76,24 @@ async def update_category(
     except SQLAlchemyError as e:
         logger.error(f"Ошибка при обновлении категории: {e}")
         await session.rollback()
+
+
+@connection
+async def delete_category(session, category_id: int) -> Optional[Note]:
+    try:
+        category = await session.get(Category, category_id)
+        if not category:
+            logger.error(f"Категория с ID {category_id} не найдена.")
+            return None
+
+        await session.delete(category)
+        await session.commit()
+        logger.info(f"Заметка с ID {category_id} успешно удалена.")
+        return category
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка при удалении заметки: {e}")
+        await session.rollback()
+        return None        
 
 
 @connection
@@ -253,7 +272,8 @@ async def get_notes_by_user(
                 'created_at': note.created_at,
                 'content_type': note.content_type,
                 'content_text': note.content_text,
-                'file_id': note.file_id,                
+                'file_id': note.file_id,
+                'category_id': note.category_id,             
             } for note in notes
         ]
 
@@ -297,6 +317,7 @@ async def find_notes_by_category_name(
                 'content_type': note.content_type,
                 'content_text': note.content_text,
                 'file_id': note.file_id,
+                'category_id': note.category_id,
                 'category_name': note.category.name
             } for note in notes
         ]        

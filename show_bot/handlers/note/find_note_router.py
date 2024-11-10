@@ -1,10 +1,10 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 from create_bot import bot
-from data_base.dao import get_all_categories, get_notes_by_user, find_notes_by_category_name
-from keyboards.note_kb import generate_category_keyboard, generate_find_category_keyboard, main_note_kb, find_note_kb
+from data_base.dao import get_notes_by_user
+from keyboards.note_kb import main_note_kb, find_note_kb
 from utils_bot.utils import send_many_notes
 
 
@@ -27,7 +27,7 @@ async def all_views_noti(message: Message, state: FSMContext):
     await state.clear()
     all_notes = await get_notes_by_user(user_id=message.from_user.id)
     if all_notes:
-        await message.answer(f'Всего {len(all_notes)} заметок', reply_markup=main_note_kb())
+        await message.answer(f'📚 Всего {len(all_notes)} заметок', reply_markup=main_note_kb())
         await send_many_notes(all_notes, bot, message.from_user.id)
     else:
         await message.answer('У вас пока нет ни одной заметки!', reply_markup=main_note_kb())
@@ -50,7 +50,7 @@ async def text_noti_process(message: Message, state: FSMContext):
     all_notes = await get_notes_by_user(user_id=message.from_user.id, text_search=text_search)
     await state.clear()
     if all_notes:
-        await message.answer(f'C поисковой фразой {text_search} было обнаружено {len(all_notes)} заметок!',
+        await message.answer(f'📚 C поисковой фразой "{text_search}" было обнаружено {len(all_notes)} заметок!',
                              reply_markup=main_note_kb())
         await send_many_notes(all_notes, bot, message.from_user.id)
     else:

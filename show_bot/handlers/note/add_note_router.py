@@ -21,7 +21,7 @@ class AddNoteStates(StatesGroup):
 @add_note_router.message(F.text == '📝 Заметки')
 async def start_note(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer('Ты в меню добавления заметок. Выбери необходимое действие.',
+    await message.answer('Ты в меню заметок. Выбери необходимое действие.',
                          reply_markup=main_note_kb())    
     
 
@@ -29,13 +29,12 @@ async def start_note(message: Message, state: FSMContext):
 async def category_views_noti(message: Message, state: FSMContext):
     await state.clear()
     all_category = await get_all_categories()
-    await message.answer('Добавьте новую категорию с помощью меню', reply_markup=main_category_kb())        
-    
+    await message.answer('⭐️ Добавьте новую категорию с помощью меню', reply_markup=main_category_kb())    
     if all_category:
-        await message.answer('Выберете категорию',
+        await message.answer('или выберете из представленных:',
                              reply_markup=generate_category_keyboard(all_category))
     else:
-        await message.answer('У вас пока нет ни одной заметки!', reply_markup=main_category_kb())        
+        await message.answer('У вас нет ни одной категории. Добавьте ее👇!', reply_markup=main_category_kb())        
 
 
 @add_note_router.message(F.text == "📝 Добавить категорию")
@@ -49,7 +48,7 @@ async def handle_category_message(message: Message, state: FSMContext):
     name_text = message.text
     if name_text:
         await state.update_data(category_name=name_text)
-        text = (f'Название новой категории: "{name_text}". Добавляем?')
+        text = (f'⭐️ Название новой категории: "{name_text}". Добавляем?')
         await message.answer(text, reply_markup=add_category_check())
         await state.set_state(AddNoteStates.check_state_cat)
     else:
@@ -65,7 +64,7 @@ async def cancel_add_category(message: Message, state: FSMContext):
 async def confirm_add_category(message: Message, state: FSMContext):
     category = await state.get_data()
     await add_category(category['category_name'])
-    await message.answer('Категория успешно добавлена!', reply_markup=main_note_kb())
+    await message.answer('Категория успешно добавлена! 🚀', reply_markup=main_note_kb())
     await state.clear()
 
 
@@ -86,18 +85,18 @@ async def handle_user_note_message(message: Message, state: FSMContext):
     if content_info.get('content_type'):
         await state.update_data(**content_info)
 
-        text = (f"Новая заметка:\n\n"                
-                f"Категория: <b>{category['category_name']}</b>\n"
+        text = (f"Новая заметка 📚\n\n"                
+                f"Категория ⭐️ <u>{category['category_name']}</u>\n"
                 "Текст:\n"
-                f"{content_info['content_text'] if content_info['content_text'] else 'Отсутствует'}\n\n"                
-                f"Все ли верно?")
+                f"<b>{content_info['content_text'] if content_info['content_text'] else 'Отсутствует'}</b>\n\n"                
+                f"Все ли верно💡")
         await send_message_user(bot=bot, content_type=content_info['content_type'], content_text=text,
                                 user_id=message.from_user.id, file_id=content_info['file_id'],
                                 kb=add_note_check())
         await state.set_state(AddNoteStates.check_state)
     else:
         await message.answer(
-            'Я не знаю как работать с таким медафайлом, как ты скинул. Давай что-то другое, ок?'
+            'Я не знаю как работать с таким медафайлом. Нужно что-то другое.'
         )
         await state.set_state(AddNoteStates.content)
 

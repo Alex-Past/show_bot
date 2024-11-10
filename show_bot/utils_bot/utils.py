@@ -1,6 +1,7 @@
 import asyncio
 from aiogram.types import Message
-from keyboards.note_kb import rule_note_kb
+from keyboards.note_kb import rule_cat_kb, rule_note_kb
+from data_base.dao import get_category_by_id
 
 def get_content_info(message: Message):
     content_type = None
@@ -41,8 +42,15 @@ async def send_message_user(bot, user_id, content_type, content_text=None, file_
 async def send_many_notes(all_notes, bot, user_id):
     for note in all_notes:
         try:
-            text = (f"{note['created_at']}\n\n"                   
-                    f"<b>{note['content_text'] if note['content_text'] else ''}</b>\n\n")                    
+            # if note['category_id']:
+            category = await get_category_by_id(note['category_id'])
+            cat_name = category['category_name']
+            
+            text = (f"{note['created_at'].strftime('%Y-%m-%d')}\n"
+                    f"✨ Категория: <u>{cat_name if cat_name else ''}</u>\n\n"                 
+                    f"<b>{note['content_text'] if note['content_text'] else ''}</b>\n\n"
+                    "📚")
+                             
             await send_message_user(bot=bot, content_type=note['content_type'],
                                     content_text=text,
                                     user_id=user_id,
@@ -52,4 +60,21 @@ async def send_many_notes(all_notes, bot, user_id):
             print(f'Error: {E}')
             await asyncio.sleep(2)
         finally:
-            await asyncio.sleep(0.5)        
+            await asyncio.sleep(0.5)
+
+
+async def send_many_categories(all_category, bot, user_id):
+    for category in all_category:
+        try:                       
+            text = f"✨ Категория: <b>{category['category_name']}</b>\n\n"                             
+            await bot.send_message(
+                text=text,
+                chat_id=user_id,                
+                reply_markup=rule_cat_kb(category['id'])
+            )
+
+        except Exception as E:
+            print(f'Error: {E}')
+            await asyncio.sleep(2)
+        finally:
+            await asyncio.sleep(0.5)
