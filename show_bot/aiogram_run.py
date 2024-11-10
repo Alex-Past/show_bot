@@ -2,6 +2,7 @@ import asyncio
 from create_bot import bot, dp, admins
 from data_base.base import create_tables
 from handlers.note.find_note_router import find_note_router
+from handlers.note.find_cat_router import find_cat_router
 from handlers.note.upd_note_router import upd_note_router
 from handlers.note.add_note_router import add_note_router
 from aiogram.types import BotCommand, BotCommandScopeDefault
@@ -35,6 +36,7 @@ async def stop_bot():
 async def main():    
     dp.include_router(start_router)
     dp.include_router(add_note_router)
+    dp.include_router(find_cat_router)
     dp.include_router(find_note_router)
     dp.include_router(upd_note_router)
 
