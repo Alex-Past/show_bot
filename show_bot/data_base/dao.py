@@ -1,7 +1,7 @@
 from create_bot import logger
 from .base import connection
 from .models import Category, User, Note
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from typing import List, Dict, Any, Optional
 from sqlalchemy.exc import SQLAlchemyError
@@ -35,14 +35,24 @@ async def set_user(
 @connection
 async def add_category(
     session,
+    user_id: int,
     text_name: str,
 ) -> Optional[Category]:
     """Создаем категорию, если ее нет."""
     try:
-        category = await session.scalar(select(Category).filter_by(name=text_name))
-
+        user = await session.scalar(select(User).filter_by(id=user_id))
+        if not user:
+            logger.error(f"Пользователь с ID {user_id} не найден.")
+            return None
+        category = await session.scalar(select(Category).filter_by(
+            name=text_name,
+            user_id=user_id
+        ))
         if not category:
-            new_category = Category(name=text_name)
+            new_category = Category(
+                name=text_name,
+                user_id=user_id
+            )
             session.add(new_category)
             await session.commit()
             logger.info(f"Добавлена новая категория: {text_name}!")
@@ -99,10 +109,11 @@ async def delete_category(session, category_id: int) -> Optional[Note]:
 @connection
 async def get_all_categories(
     session,
+    user_id: int,
     text_search: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     try:        
-        stmt = select(Category)
+        stmt = select(Category).filter_by(user_id=user_id)
         result = await session.execute(stmt)
         categories = result.scalars().all()
         if not categories:

@@ -4,7 +4,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 from create_bot import bot
 from data_base.dao import add_note, get_all_categories, add_category, get_category_by_id
-from keyboards.note_kb import main_note_kb, add_category_check, add_note_check, generate_category_keyboard, main_category_kb
+from keyboards.note_kb import all_category_kb, main_note_kb, add_category_check, add_note_check, generate_category_keyboard, main_category_kb
 from keyboards.other_kb import stop_fsm
 from utils_bot.utils import get_content_info, send_message_user
 
@@ -28,7 +28,7 @@ async def start_note(message: Message, state: FSMContext):
 @add_note_router.message(F.text == '📝 Добавить заметку')
 async def category_views_noti(message: Message, state: FSMContext):
     await state.clear()
-    all_category = await get_all_categories()
+    all_category = await get_all_categories(user_id=message.from_user.id)
     await message.answer('⭐️ Добавьте новую категорию с помощью меню', reply_markup=main_category_kb())    
     if all_category:
         await message.answer('или выберете из представленных:',
@@ -63,8 +63,8 @@ async def cancel_add_category(message: Message, state: FSMContext):
 @add_note_router.message(AddNoteStates.check_state_cat, F.text == "✅ Добавить")
 async def confirm_add_category(message: Message, state: FSMContext):
     category = await state.get_data()
-    await add_category(category['category_name'])
-    await message.answer('Категория успешно добавлена! 🚀', reply_markup=main_note_kb())
+    await add_category(user_id=message.from_user.id, text_name=category['category_name'])
+    await message.answer('Категория успешно добавлена! 🚀', reply_markup=all_category_kb())
     await state.clear()
 
 

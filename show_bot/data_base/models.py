@@ -17,6 +17,11 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    categories: Mapped[List["Category"]] = relationship(
+        "Category",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
 
 
 class Category(Base):
@@ -28,11 +33,17 @@ class Category(Base):
         primary_key=True,
         autoincrement=True
     )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey('users.id'),
+        nullable=False
+    )
     name: Mapped[str] = mapped_column(
         String,
         nullable=False,
         default="Общее"
     )
+
+    user: Mapped["User"] = relationship("User", back_populates="categories")
     notes: Mapped[List["Note"]] = relationship(
         "Note",
         back_populates="category",

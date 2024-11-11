@@ -58,7 +58,7 @@ def main_note_kb():
 
 def find_note_kb():
     kb_list = [
-        [KeyboardButton(text="📋 Все заметки"), KeyboardButton(text="📝 По категории")],
+        [KeyboardButton(text="📋 Все заметки"), KeyboardButton(text="📝 Заметки по категории")],
         [KeyboardButton(text="🔍 Поиск по тексту"), KeyboardButton(text="🔍 Поиск категории")],
         [KeyboardButton(text="📋 Все категории"), KeyboardButton(text="🏠 Главное меню")]
     ]
@@ -106,7 +106,19 @@ def add_category_check():
 def main_category_kb():
     kb_list = [
         [KeyboardButton(text="📝 Добавить категорию"), KeyboardButton(text="📋 Все категории")],
-        [KeyboardButton(text="🏠 Главное меню")]
+        [KeyboardButton(text="📋 Просмотр заметок"), KeyboardButton(text="🏠 Главное меню")]
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True,
+        input_field_placeholder="Если подходящей категории нет, можешь ее создать👇"
+    )
+
+def all_category_kb():
+    kb_list = [
+        [KeyboardButton(text="📝 Добавить заметку"), KeyboardButton(text="📝 Добавить категорию")],
+        [KeyboardButton(text="📋 Просмотр заметок"), KeyboardButton(text="🏠 Главное меню")]
     ]
     return ReplyKeyboardMarkup(
         keyboard=kb_list,

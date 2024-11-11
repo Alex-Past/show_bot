@@ -54,7 +54,7 @@ async def text_noti_process(message: Message, state: FSMContext):
                              reply_markup=main_note_kb())
         await send_many_notes(all_notes, bot, message.from_user.id)
     else:
-        await message.answer(f'У вас пока нет ни одной заметки, которая содержала бы в тексте {text_search}!',
+        await message.answer(f'У вас пока нет ни одной заметки, которая содержала бы в тексте "{text_search}"!',
                              reply_markup=main_note_kb())
 
 
