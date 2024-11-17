@@ -22,17 +22,6 @@ async def start_views_noti(message: Message, state: FSMContext):
     await message.answer('Выбери какие заметки отобразить', reply_markup=find_note_kb())  
 
 
-@find_note_router.message(F.text == "📋 Все заметки")
-async def all_views_noti(message: Message, state: FSMContext):
-    await state.clear()
-    all_notes = await get_notes_by_user(user_id=message.from_user.id)
-    if all_notes:
-        await message.answer(f'📚 Всего {len(all_notes)} заметок', reply_markup=main_note_kb())
-        await send_many_notes(all_notes, bot, message.from_user.id)
-    else:
-        await message.answer('У вас пока нет ни одной заметки!', reply_markup=main_note_kb())
-
-
 @find_note_router.message(F.text == "🔍 Поиск по тексту")
 async def text_views_noti(message: Message, state: FSMContext):
     await state.clear()

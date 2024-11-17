@@ -3,8 +3,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 from create_bot import bot
-from data_base.dao import add_note, get_all_categories, add_category, get_category_by_id
-from keyboards.note_kb import all_category_kb, main_note_kb, add_category_check, add_note_check, generate_category_keyboard, main_category_kb
+from data_base.dao import add_note, get_all_categories, get_category_by_id
+from keyboards.note_kb import main_note_kb, add_note_check, generate_category_keyboard, main_category_kb
 from keyboards.other_kb import stop_fsm
 from utils_bot.utils import get_content_info, send_message_user
 
@@ -14,8 +14,6 @@ add_note_router = Router()
 class AddNoteStates(StatesGroup):
     content = State() 
     check_state = State() 
-    category = State()
-    check_state_cat = State()
 
     
 @add_note_router.message(F.text == '📝 Заметки')
@@ -37,42 +35,16 @@ async def category_views_noti(message: Message, state: FSMContext):
         await message.answer('У вас нет ни одной категории. Добавьте ее👇!', reply_markup=main_category_kb())        
 
 
-@add_note_router.message(F.text == "📝 Добавить категорию")
-async def start_add_category(message: Message, state: FSMContext):
-    await state.clear()
-    await message.answer('Укажите название категории', reply_markup=add_category_check())
-    await state.set_state(AddNoteStates.category)
-
-@add_note_router.message(AddNoteStates.category)
-async def handle_category_message(message: Message, state: FSMContext):
-    name_text = message.text
-    if name_text:
-        await state.update_data(category_name=name_text)
-        text = (f'⭐️ Название новой категории: "{name_text}". Добавляем?')
-        await message.answer(text, reply_markup=add_category_check())
-        await state.set_state(AddNoteStates.check_state_cat)
-    else:
-        await message.answer('Укажите название категории')        
-        await state.set_state(AddNoteStates.category)            
-
-@add_note_router.message(AddNoteStates.check_state_cat, F.text == "❌ Отменить")
-async def cancel_add_category(message: Message, state: FSMContext):
-    await message.answer('Добавление категории отменено!', reply_markup=main_note_kb())
-    await state.clear()
-
-@add_note_router.message(AddNoteStates.check_state_cat, F.text == "✅ Добавить")
-async def confirm_add_category(message: Message, state: FSMContext):
-    category = await state.get_data()
-    await add_category(user_id=message.from_user.id, text_name=category['category_name'])
-    await message.answer('Категория успешно добавлена! 🚀', reply_markup=all_category_kb())
-    await state.clear()
-
-
 @add_note_router.callback_query(F.data.startswith('category_id_'))
 async def start_add_note(call: CallbackQuery, state: FSMContext):
     category_id = int(call.data.replace('category_id_', ''))
     await state.update_data(category_id=category_id)
-    await call.message.answer('Добавьте заметку в любом формате', reply_markup=stop_fsm())
+    category = await get_category_by_id(category_id)
+    category_name= category['category_name']    
+    await call.message.answer(
+        f'Добавьте заметку для категории "{category_name}"',
+        reply_markup=stop_fsm()
+    )
     await state.set_state(AddNoteStates.content)
 
 
@@ -99,6 +71,7 @@ async def handle_user_note_message(message: Message, state: FSMContext):
             'Я не знаю как работать с таким медафайлом. Нужно что-то другое.'
         )
         await state.set_state(AddNoteStates.content)
+        
 
 @add_note_router.message(AddNoteStates.check_state, F.text == "✅ Все верно")
 async def confirm_add_note(message: Message, state: FSMContext):

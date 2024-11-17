@@ -58,7 +58,7 @@ def main_note_kb():
 
 def find_note_kb():
     kb_list = [
-        [KeyboardButton(text="📋 Все заметки"), KeyboardButton(text="📝 Заметки по категории")],
+        [KeyboardButton(text="📝 Все заметки")],
         [KeyboardButton(text="🔍 Поиск по тексту"), KeyboardButton(text="🔍 Поиск категории")],
         [KeyboardButton(text="📋 Все категории"), KeyboardButton(text="🏠 Главное меню")]
     ]
@@ -90,6 +90,17 @@ def add_note_check():
         resize_keyboard=True,
         one_time_keyboard=True,
         input_field_placeholder="Воспользуйся меню👇"
+    )
+
+def del_check():
+    kb_list = [
+        [KeyboardButton(text="🗑 Удалить"), KeyboardButton(text="❌ Отменить")]
+    ]
+    return ReplyKeyboardMarkup(
+        keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True,
+        input_field_placeholder="Подтвердите действие👇"
     )
 
 def add_category_check():

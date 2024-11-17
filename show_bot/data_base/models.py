@@ -1,6 +1,7 @@
 from sqlalchemy import BigInteger, Integer, Text, ForeignKey, String
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
+
 from .database import Base
 
 
@@ -74,6 +75,6 @@ class Note(Base):
 
     user: Mapped["User"] = relationship("User", back_populates="notes")
     category: Mapped[Optional["Category"]] = relationship(
-        "Category", 
+        "Category",
         back_populates="notes"
     )
