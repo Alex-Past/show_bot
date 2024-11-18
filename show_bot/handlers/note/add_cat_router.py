@@ -13,7 +13,6 @@ add_cat_router = Router()
 
 
 class AddNoteStates(StatesGroup):
-
     category = State()
     check_state_cat = State()
 

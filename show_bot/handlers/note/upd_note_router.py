@@ -2,12 +2,13 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
-from create_bot import bot
+
 from data_base.dao import delete_note_by_id, update_text_note
 from keyboards.note_kb import main_note_kb
 
 
 upd_note_router = Router()
+
 
 class UPDNoteStates(StatesGroup):
     content_text = State()
@@ -19,7 +20,9 @@ async def edit_note_text_process(call: CallbackQuery, state: FSMContext):
     note_id = int(call.data.replace('edit_note_text_', ''))
     await call.answer(f'✍️ Режим редактирования заметки')
     await state.update_data(note_id=note_id)
-    await call.message.answer(f'Отправь новое текстовое содержимое для этой заметки 👇')
+    await call.message.answer(
+        f'Отправь новое текстовое содержимое для этой заметки 👇'
+    )
     await state.set_state(UPDNoteStates.content_text)
 
 
@@ -30,8 +33,10 @@ async def confirm_edit_note_text(message: Message, state: FSMContext):
     content_text = message.text.strip()
     await update_text_note(note_id=note_id, content_text=content_text)
     await state.clear()
-    await message.answer(f'Текст заметки с ID {note_id} успешно изменен на "{content_text}"!',
-                         reply_markup=main_note_kb())
+    await message.answer(
+        f'Текст заметки с ID {note_id} успешно изменен на "{content_text}"!',
+        reply_markup=main_note_kb()
+    )
 
 
 @upd_note_router.callback_query(F.data.startswith('dell_note_'))
@@ -40,4 +45,4 @@ async def dell_note_process(call: CallbackQuery, state: FSMContext):
     note_id = int(call.data.replace('dell_note_', ''))
     await delete_note_by_id(note_id=note_id)
     await call.answer(f'Заметка удалена!', show_alert=True)
-    await call.message.delete()        
+    await call.message.delete()

@@ -4,13 +4,13 @@ from aiogram.types import BotCommand, BotCommandScopeDefault
 
 from create_bot import bot, dp, admins
 from data_base.base import create_tables
+from handlers.note.add_cat_router import add_cat_router
+from handlers.note.add_note_router import add_note_router
 from handlers.note.find_note_router import find_note_router
 from handlers.note.find_cat_router import find_cat_router
 from handlers.note.upd_note_router import upd_note_router
-from handlers.note.upd_cat_router import upd_cat_router
 from handlers.note.view_cat_router import view_cat_router
-from handlers.note.add_note_router import add_note_router
-from handlers.note.add_cat_router import add_cat_router
+from handlers.note.upd_cat_router import upd_cat_router
 from handlers.start_router import start_router
 
 
