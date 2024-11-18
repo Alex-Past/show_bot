@@ -8,7 +8,7 @@ def generate_category_keyboard(categories):
     for category in unique_category:
         button = InlineKeyboardButton(
             text=category['category_name'],
-            callback_data=f'category_id_{category['id']}'
+            callback_data=f"category_id_{category['id']}"
         )
         keyboard.inline_keyboard.append([button])
     return keyboard
@@ -20,7 +20,7 @@ def generate_find_category_keyboard(categories):
     for category in unique_category:
         button = InlineKeyboardButton(
             text=category['category_name'],
-            callback_data=f'category_name_{category['category_name']}'
+            callback_data=f"category_name_{category['category_name']}"
         )
         keyboard.inline_keyboard.append([button])
     return keyboard
