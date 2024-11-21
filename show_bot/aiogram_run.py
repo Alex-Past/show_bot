@@ -12,10 +12,15 @@ from handlers.note.upd_note_router import upd_note_router
 from handlers.note.view_cat_router import view_cat_router
 from handlers.note.upd_cat_router import upd_cat_router
 from handlers.start_router import start_router
+from handlers.save_notes import save_router
 
 
 async def set_commands():
-    commands = [BotCommand(command='start', description='Старт')]
+    commands = [
+        BotCommand(command='start', description='Старт'),
+        BotCommand(command="/export_notes", description='Экспортировать заметки'),
+        BotCommand(command="/import_notes", description='Импортировать заметки'),
+    ]
     await bot.set_my_commands(commands, BotCommandScopeDefault())
 
 
@@ -46,6 +51,7 @@ async def main():
     dp.include_router(view_cat_router)
     dp.include_router(upd_cat_router)
     dp.include_router(upd_note_router)
+    dp.include_router(save_router)
 
     dp.startup.register(start_bot)
     dp.shutdown.register(stop_bot)
