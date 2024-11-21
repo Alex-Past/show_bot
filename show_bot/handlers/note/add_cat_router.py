@@ -58,12 +58,19 @@ async def cancel_add_category(message: Message, state: FSMContext):
 @add_cat_router.message(AddNoteStates.check_state_cat, F.text == "✅ Добавить")
 async def confirm_add_category(message: Message, state: FSMContext):
     category = await state.get_data()
-    await add_category(
+    new_category_name = category['category_name']
+    new_cat = await add_category(
         user_id=message.from_user.id,
-        text_name=category['category_name']
+        text_name=new_category_name
     )
-    await message.answer(
-        'Категория успешно добавлена! 🚀',
-        reply_markup=all_category_kb()
-    )
+    if new_cat is not None:
+        await message.answer(
+            f'Категория "{new_category_name}" успешно добавлена! 🚀',
+            reply_markup=all_category_kb()
+        )
+    else:
+        await message.answer(
+            f'Категория "{new_category_name}" уже существует!',
+            reply_markup=all_category_kb()
+        )
     await state.clear()

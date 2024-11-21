@@ -5,6 +5,7 @@ from aiogram.types import Message, CallbackQuery
 
 from data_base.dao import delete_category, update_category
 from keyboards.note_kb import all_category_kb, del_check, main_note_kb
+from keyboards.other_kb import stop_fsm
 
 
 upd_cat_router = Router()
@@ -21,7 +22,10 @@ async def edit_cat_text_process(call: CallbackQuery, state: FSMContext):
     cat_id = int(call.data.replace('edit_cat_text_', ''))
     await call.answer(f'✍️ Режим редактирования категории')
     await state.update_data(cat_id=cat_id)
-    await call.message.answer(f'Введи новое название категории 👇')
+    await call.message.answer(
+        'Введи новое название категории 👇',
+        reply_markup=stop_fsm()
+    )
     await state.set_state(UPDNoteStates.text)
 
 

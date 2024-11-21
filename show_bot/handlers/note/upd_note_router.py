@@ -5,6 +5,7 @@ from aiogram.types import Message, CallbackQuery
 
 from data_base.dao import delete_note_by_id, update_text_note
 from keyboards.note_kb import main_note_kb
+from keyboards.other_kb import stop_fsm
 
 
 upd_note_router = Router()
@@ -21,7 +22,8 @@ async def edit_note_text_process(call: CallbackQuery, state: FSMContext):
     await call.answer(f'✍️ Режим редактирования заметки')
     await state.update_data(note_id=note_id)
     await call.message.answer(
-        f'Отправь новое текстовое содержимое для этой заметки 👇'
+        f'Отправь новое текстовое содержимое для этой заметки 👇',
+        reply_markup=stop_fsm()
     )
     await state.set_state(UPDNoteStates.content_text)
 

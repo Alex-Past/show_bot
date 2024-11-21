@@ -87,7 +87,7 @@ async def send_many_notes(all_notes, bot, user_id):
         try:
             category = await get_category_by_id(note['category_id'])
             cat_name = category['category_name']
-            text = (f"{note['created_at'].strftime('%Y-%m-%d')}\n"
+            text = (f"{note['created_at'].strftime('%d-%m-%Y')}\n"
                     f"✨ Категория: <u>{cat_name if cat_name else ''}</u>\n\n"
                     f"<b>{note['content_text'] if note['content_text'] else ''}</b>\n\n"
                     "📚")
@@ -103,7 +103,7 @@ async def send_many_notes(all_notes, bot, user_id):
             print(f'Error: {e}')
             await asyncio.sleep(2)
         finally:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.2)
 
 
 async def send_many_categories(all_category, bot, user_id):
@@ -120,4 +120,4 @@ async def send_many_categories(all_category, bot, user_id):
             print(f'Error: {e}')
             await asyncio.sleep(2)
         finally:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.2)
