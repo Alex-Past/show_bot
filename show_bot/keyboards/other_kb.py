@@ -15,7 +15,7 @@ def main_kb():
 
 def stop_fsm():
     kb_list = [
-        [KeyboardButton(text="❌ Остановить сценарий")],
+        [KeyboardButton(text="❌ Отмена")],
         [KeyboardButton(text="🏠 Главное меню")]
     ]
     return ReplyKeyboardMarkup(

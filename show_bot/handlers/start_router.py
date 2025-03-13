@@ -27,7 +27,7 @@ async def cmd_start(message: Message, state: FSMContext):
     await message.answer(greeting, reply_markup=main_kb())
 
 
-@start_router.message(F.text == "❌ Остановить сценарий")
+@start_router.message(F.text == "❌ Отмена")
 async def stop_fsm(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
